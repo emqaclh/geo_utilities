@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+pandas = "*"
+geopandas = "*"
+osmnx = "*"
+networkx = "*"
+igraph = "*"
+pyrosm = "*"
+folium = "*"
+scikit-learn = "*"
+
+[dev-packages]
+jupyter = "*"
+jupyterlab = "*"
+black = "*"
+ipykernel = "*"
+
+[requires]
+python_version = "3.8"
