@@ -95,7 +95,7 @@ class ShortestRoute:
         sources: np.ndarray,
         travel_type: str = "driving",
         return_dist: bool = False,
-        tree: Optional[BallTree] = None
+        tree: Optional[BallTree] = None,
     ):
         if tree is None:
             tree = self.build_nodes_tree(travel_type)
@@ -106,21 +106,39 @@ class ShortestRoute:
             i = tree.query(sources, k=1, return_distance=return_dist)
             return i[:, 0]
 
-    def compute_cost_matrix(self, sources: np.ndarray, targets: np.ndarray, travel_type: str = 'driving', weight: str = 'travel_time'):
+    def compute_cost_matrix(
+        self,
+        sources: np.ndarray,
+        targets: np.ndarray,
+        travel_type: str = "driving",
+        weight: str = "travel_time",
+    ):
         self.validate_travel_type(travel_type)
         graph = self.graphs[travel_type]
         tree = self.build_nodes_tree(travel_type)
-        source_nodes = self.get_nearest_nodes(sources, travel_type=travel_type, return_dist=False, tree=tree)
-        target_nodes = self.get_nearest_nodes(targets, travel_type=travel_type, return_dist=False, tree=tree)
-        cost_matrix = np.full( (len(sources), len(targets)), np.inf )
+        source_nodes = self.get_nearest_nodes(
+            sources, travel_type=travel_type, return_dist=False, tree=tree
+        )
+        target_nodes = self.get_nearest_nodes(
+            targets, travel_type=travel_type, return_dist=False, tree=tree
+        )
+        cost_matrix = np.full((len(sources), len(targets)), np.inf)
         for index_source, source in enumerate(source_nodes):
             distances = nx.shortest_path_length(graph, source=source, weight=weight)
             for index_target, target in enumerate(target_nodes):
                 cost_matrix[index_source, index_target] = distances[target]
         return cost_matrix
-    
-    def compute_travel_time_matrix(self, sources: np.ndarray, targets: np.ndarray, travel_type: str = 'driving'):
-        return self.compute_cost_matrix(sources, targets, travel_type=travel_type, weight='travel_time')
-    
-    def compute_distance_matrix(self, sources: np.ndarray, targets: np.ndarray, travel_type: str = 'driving'):
-        return self.compute_cost_matrix(sources, targets, travel_type=travel_type, weight='length')
+
+    def compute_travel_time_matrix(
+        self, sources: np.ndarray, targets: np.ndarray, travel_type: str = "driving"
+    ):
+        return self.compute_cost_matrix(
+            sources, targets, travel_type=travel_type, weight="travel_time"
+        )
+
+    def compute_distance_matrix(
+        self, sources: np.ndarray, targets: np.ndarray, travel_type: str = "driving"
+    ):
+        return self.compute_cost_matrix(
+            sources, targets, travel_type=travel_type, weight="length"
+        )
