@@ -118,3 +118,9 @@ class ShortestRoute:
             for index_target, target in enumerate(target_nodes):
                 cost_matrix[index_source, index_target] = distances[target]
         return cost_matrix
+    
+    def compute_travel_time_matrix(self, sources: np.ndarray, targets: np.ndarray, travel_type: str = 'driving'):
+        return self.compute_cost_matrix(sources, targets, travel_type=travel_type, weight='travel_time')
+    
+    def compute_distance_matrix(self, sources: np.ndarray, targets: np.ndarray, travel_type: str = 'driving'):
+        return self.compute_cost_matrix(sources, targets, travel_type=travel_type, weight='length')
