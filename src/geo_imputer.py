@@ -21,24 +21,28 @@ class GeoImputer:
             self.tree = self.build_tree()
         else:
             raise TypeError("Must provide a valid GeoDataFrame object")
-    
+
     def impute(self, points: np.ndarray, column: str, k=5):
         if not self.column_exists(column):
-            raise Exception(f'{column} does not exists.')
+            raise Exception(f"{column} does not exists.")
         distances, indexes = self.tree.query(points, k=3)
         containing_matrix = self.get_containing_matrix(points, indexes)
         col_values = np.full(indexes.shape, np.nan)
         for i in range(len(indexes)):
             col_values[i, :] = self.get_column_values_per_index(column, indexes[i])
 
-    def get_column_values_per_index(self, column: str, indexes: np.ndarray) -> np.ndarray:
+    def get_column_values_per_index(
+        self, column: str, indexes: np.ndarray
+    ) -> np.ndarray:
         return self.geodf.loc[indexes, column]
-    
-    def get_containing_matrix(self, points: np.ndarray, indexes: np.ndarray) -> np.ndarray:
+
+    def get_containing_matrix(
+        self, points: np.ndarray, indexes: np.ndarray
+    ) -> np.ndarray:
         result_matrix = np.full(indexes.shape, False)
         for i in range(len(points)):
             p = Point(points[i])
-            geometries = self.geodf.loc[indexes[i], 'geometry']
+            geometries = self.geodf.loc[indexes[i], "geometry"]
             result_matrix[i, :] = geometries.contains(p).values
         return result_matrix
 
