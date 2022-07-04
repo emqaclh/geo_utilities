@@ -27,6 +27,12 @@ class GeoImputer:
             raise Exception(f'{column} does not exists.')
         distances, indexes = self.tree.query(points, k=3)
         containing_matrix = self.get_containing_matrix(points, indexes)
+        col_values = np.full(indexes.shape, np.nan)
+        for i in range(len(indexes)):
+            col_values[i, :] = self.get_column_values_per_index(column, indexes[i])
+
+    def get_column_values_per_index(self, column: str, indexes: np.ndarray) -> np.ndarray:
+        return self.geodf.loc[indexes, column]
     
     def get_containing_matrix(self, points: np.ndarray, indexes: np.ndarray) -> np.ndarray:
         result_matrix = np.full(indexes.shape, False)
