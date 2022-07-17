@@ -15,7 +15,7 @@ class GeoImputer:
     tree = None
 
     def __init__(self, geodf: gpd.GeoDataFrame) -> None:
-        if type(geodf) is gpd.GeoDataFrame:
+        if isinstance(geodf,  gpd.GeoDataFrame):
             geodf.reset_index(inplace=True, drop=True)
             self.geodf = geodf
             self.tree = self.build_tree()
@@ -25,11 +25,23 @@ class GeoImputer:
     def impute(self, points: np.ndarray, column: str, k=5):
         if not self.column_exists(column):
             raise Exception(f"{column} does not exists.")
-        distances, indexes = self.tree.query(points, k=3)
+        distances, indexes = self.tree.query(points, k=k)
         containing_matrix = self.get_containing_matrix(points, indexes)
         col_values = np.full(indexes.shape, np.nan)
-        for i in range(len(indexes)):
-            col_values[i, :] = self.get_column_values_per_index(column, indexes[i])
+        result = np.full(col_values.shape[0], np.nan)
+
+        for i, index in enumerate(indexes):
+            col_values[i, :] = self.get_column_values_per_index(column, index)
+        
+        imput_index = np.where(containing_matrix.sum(axis=1) > 0, containing_matrix.argmax(axis=1), -1)
+        for i, imput_i in enumerate(imput_index):
+            if imput_i > -1:
+                result[i] = col_values[i][imput_i]
+            else:
+                result[i] = np.average(col_values[i], weights=distances[i])
+        return result
+
+
 
     def get_column_values_per_index(
         self, column: str, indexes: np.ndarray
@@ -40,10 +52,10 @@ class GeoImputer:
         self, points: np.ndarray, indexes: np.ndarray
     ) -> np.ndarray:
         result_matrix = np.full(indexes.shape, False)
-        for i in range(len(points)):
-            p = Point(points[i])
+        for i, point in enumerate(points):
+            geometry_point = Point(point)
             geometries = self.geodf.loc[indexes[i], "geometry"]
-            result_matrix[i, :] = geometries.contains(p).values
+            result_matrix[i, :] = geometries.contains(geometry_point).values
         return result_matrix
 
     def build_tree(self, distance_metric: str = "haversine") -> BallTree:
