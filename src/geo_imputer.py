@@ -15,7 +15,7 @@ class GeoImputer:
     tree = None
 
     def __init__(self, geodf: gpd.GeoDataFrame) -> None:
-        if isinstance(geodf,  gpd.GeoDataFrame):
+        if isinstance(geodf, gpd.GeoDataFrame):
             geodf.reset_index(inplace=True, drop=True)
             self.geodf = geodf
             self.tree = self.build_tree()
@@ -32,16 +32,16 @@ class GeoImputer:
 
         for i, index in enumerate(indexes):
             col_values[i, :] = self.get_column_values_per_index(column, index)
-        
-        imput_index = np.where(containing_matrix.sum(axis=1) > 0, containing_matrix.argmax(axis=1), -1)
+
+        imput_index = np.where(
+            containing_matrix.sum(axis=1) > 0, containing_matrix.argmax(axis=1), -1
+        )
         for i, imput_i in enumerate(imput_index):
             if imput_i > -1:
                 result[i] = col_values[i][imput_i]
             else:
                 result[i] = np.average(col_values[i], weights=distances[i])
         return result
-
-
 
     def get_column_values_per_index(
         self, column: str, indexes: np.ndarray
